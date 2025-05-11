@@ -8,10 +8,18 @@ class Core(commands.Cog):
 
     @app_commands.command(name="setup", description="Set up FinancePal for your server.")
     async def setup(self, interaction: discord.Interaction):
-        await interaction.response.send_message(
-            "👋 Welcome to **FinancePal**!\nUse `/add` to track assets, `/alert` for price pings, and `/aiadvisor` to ask about investing.\nTry `/help` for more.",
-            ephemeral=True
+        embed = discord.Embed(
+            title="👋 Welcome to **FinancePal**!",
+            description=(
+                "FinancePal is here to help you track assets, set price alerts, and compare stock performance.\n\n"
+                "By using FinancePal, you agree to our [Terms of Service](https://pastebin.com/3815p2Mq) and [Privacy Policy](https://pastebin.com/fWjwdehp).\n\n"
+                "Use `/add` to track assets, `/alert` for price pings, and `/aiadvisor` to ask about investing.\n"
+                "Try `/help` for more.",
+            ),
+            color=0x745fed
         )
+        embed.set_footer(text="Thank you for using FinancePal!")
+        await interaction.response.send_message(embed=embed, ephemeral=True)
 
     @app_commands.command(name="sync", description="Force command sync")
     async def sync(self, interaction: discord.Interaction):
