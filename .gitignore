@@ -1,0 +1,32 @@
+# Python
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.log
+*.db
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
+
+# macOS
+.DS_Store
+
+# Environment variables
+.env
+
+# Jupyter/Notebook files (optional)
+*.ipynb_checkpoints/
+
+# Plots
+*.png
+*.svg
+
+# Matplotlib cache
+.matplotlib/
+
+# VSCode/IDE stuff
+.vscode/
+.idea/
