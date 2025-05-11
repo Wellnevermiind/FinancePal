@@ -47,7 +47,7 @@ FinancePal is a lightweight, privacy-conscious bot built with:
 - `discord.py` 2.x
 - `yfinance`, `matplotlib`, `aiosqlite`
 
-Created with ❤️ by [nevermiind](https://github.com/Wellnevermiind) — student, programmer, and aspiring neuroscientist.
+Created with ❤️ by [nevermiind](https://github.com/Wellnevermiind) — student and programmer.
 
 ---
 
