@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://your-cdn-or-discord-link.com/logo.png" width="120" />
+  <img src="https://media.discordapp.net/attachments/859845219163176961/1370943923714916496/FinancePal_Logo_Final.png" width="120" />
 </p>
 
 <h1 align="center">FinancePal</h1>
