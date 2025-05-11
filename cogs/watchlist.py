@@ -21,6 +21,19 @@ async def init_db():
         ''')
         await db.commit()
 
+# ✅ Autocomplete setup
+COMMON_TICKERS = [
+    "AAPL", "MSFT", "TSLA", "GOOGL", "AMZN", "NVDA", "META",
+    "VOO", "SPY", "QQQ", "QDV5.DE", "IE00BKM4GZ66"
+]
+
+async def autocomplete_ticker(interaction: discord.Interaction, current: str):
+    current = current.upper()
+    return [
+        app_commands.Choice(name=ticker, value=ticker)
+        for ticker in COMMON_TICKERS if current in ticker
+    ][:10]
+
 class Watchlist(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -103,6 +116,8 @@ class Watchlist(commands.Cog):
         return discord.File(buf, filename="watchlist_chart.png")
 
     @app_commands.command(name="add", description="Add a stock or ETF to your watchlist.")
+    @app_commands.describe(stock="Stock or ETF symbol (e.g., AAPL, VOO, QDV5.DE)")
+    @app_commands.autocomplete(stock=autocomplete_ticker)
     async def add(self, interaction: discord.Interaction, stock: str):
         await interaction.response.defer(ephemeral=True)
         user_id = str(interaction.user.id)

@@ -5,6 +5,19 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import io
 
+# Shared autocomplete list
+COMMON_TICKERS = [
+    "AAPL", "MSFT", "TSLA", "GOOGL", "AMZN", "NVDA", "META",
+    "VOO", "SPY", "QQQ", "QDV5.DE", "IE00BKM4GZ66"
+]
+
+async def autocomplete_ticker(interaction: discord.Interaction, current: str):
+    current = current.upper()
+    return [
+        app_commands.Choice(name=ticker, value=ticker)
+        for ticker in COMMON_TICKERS if current in ticker
+    ][:10]
+
 class Compare(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -12,6 +25,21 @@ class Compare(commands.Cog):
     @app_commands.command(
         name="compare",
         description="Compare up to 5 stocks/ETFs on a custom time chart."
+    )
+    @app_commands.describe(
+        symbol1="Required first ticker",
+        symbol2="Required second ticker",
+        symbol3="Optional third ticker",
+        symbol4="Optional fourth ticker",
+        symbol5="Optional fifth ticker",
+        period="Period (e.g., 7d, 1mo, 3mo, 1y)"
+    )
+    @app_commands.autocomplete(
+        symbol1=autocomplete_ticker,
+        symbol2=autocomplete_ticker,
+        symbol3=autocomplete_ticker,
+        symbol4=autocomplete_ticker,
+        symbol5=autocomplete_ticker
     )
     async def compare(
         self,

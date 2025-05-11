@@ -18,6 +18,20 @@ async def init_db():
         )''')
         await db.commit()
 
+
+# 🧠 Shared ticker list for autocomplete
+COMMON_TICKERS = [
+    "AAPL", "MSFT", "TSLA", "GOOGL", "AMZN", "NVDA", "META",
+    "VOO", "SPY", "QQQ", "QDV5.DE", "IE00BKM4GZ66"
+]
+
+async def autocomplete_ticker(interaction: discord.Interaction, current: str):
+    current = current.upper()
+    return [
+        app_commands.Choice(name=ticker, value=ticker)
+        for ticker in COMMON_TICKERS if current in ticker
+    ][:10]
+
 class Alerts(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -59,6 +73,12 @@ class Alerts(commands.Cog):
             await db.commit()
 
     @app_commands.command(name="alert", description="Set a price alert for a stock or ETF.")
+    @app_commands.describe(
+        symbol="Stock/ETF symbol (e.g. AAPL, VOO, QDV5.DE)",
+        condition="Trigger direction: above or below",
+        target="Price threshold for the alert"
+    )
+    @app_commands.autocomplete(symbol=autocomplete_ticker)
     async def alert(self, interaction: discord.Interaction, symbol: str, condition: str, target: float):
         await interaction.response.defer(ephemeral=True)
 
