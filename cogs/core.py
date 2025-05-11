@@ -2,14 +2,11 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
-GUILD_ID = 857656646415024148
-
 class Core(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
     @app_commands.command(name="setup", description="Set up FinancePal for your server.")
-    @app_commands.guilds(discord.Object(id=GUILD_ID))
     async def setup(self, interaction: discord.Interaction):
         await interaction.response.send_message(
             "👋 Welcome to **FinancePal**!\nUse `/add` to track assets, `/alert` for price pings, and `/aiadvisor` to ask about investing.\nTry `/help` for more.",
@@ -17,14 +14,12 @@ class Core(commands.Cog):
         )
 
     @app_commands.command(name="sync", description="Force command sync")
-    @app_commands.guilds(discord.Object(id=GUILD_ID))
     async def sync(self, interaction: discord.Interaction):
         await interaction.response.defer(thinking=True, ephemeral=True)
-        synced = await self.bot.tree.sync(guild=discord.Object(id=GUILD_ID))
-        await interaction.followup.send(f"🔁 Synced {len(synced)} commands to guild.")
+        synced = await self.bot.tree.sync()
+        await interaction.followup.send(f"🔁 Synced {len(synced)} global commands.")
 
     @app_commands.command(name="help", description="Show help for FinancePal.")
-    @app_commands.guilds(discord.Object(id=GUILD_ID))
     async def help(self, interaction: discord.Interaction):
         embed = discord.Embed(
             title="📘 FinancePal Help",

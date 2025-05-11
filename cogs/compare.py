@@ -5,8 +5,6 @@ import yfinance as yf
 import matplotlib.pyplot as plt
 import io
 
-GUILD_ID = 857656646415024148
-
 class Compare(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -15,7 +13,6 @@ class Compare(commands.Cog):
         name="compare",
         description="Compare up to 5 stocks/ETFs on a custom time chart."
     )
-    @app_commands.guilds(discord.Object(id=GUILD_ID))
     async def compare(
         self,
         interaction: discord.Interaction,

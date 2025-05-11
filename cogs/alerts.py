@@ -8,8 +8,6 @@ import yfinance as yf
 DB_PATH = "data/finance.db"
 os.makedirs("data", exist_ok=True)
 
-GUILD_ID = 857656646415024148
-
 async def init_db():
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute('''CREATE TABLE IF NOT EXISTS alerts (
@@ -61,7 +59,6 @@ class Alerts(commands.Cog):
             await db.commit()
 
     @app_commands.command(name="alert", description="Set a price alert for a stock or ETF.")
-    @app_commands.guilds(discord.Object(id=GUILD_ID))
     async def alert(self, interaction: discord.Interaction, symbol: str, condition: str, target: float):
         await interaction.response.defer(ephemeral=True)
 
@@ -86,7 +83,6 @@ class Alerts(commands.Cog):
         )
 
     @app_commands.command(name="alert_list", description="View your active price alerts.")
-    @app_commands.guilds(discord.Object(id=GUILD_ID))
     async def alert_list(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         user_id = str(interaction.user.id)
@@ -100,7 +96,6 @@ class Alerts(commands.Cog):
         await interaction.followup.send("📋 Your Alerts:\n" + "\n".join(lines), ephemeral=True)
 
     @app_commands.command(name="alert_remove", description="Remove a specific alert by symbol and target.")
-    @app_commands.guilds(discord.Object(id=GUILD_ID))
     async def alert_remove(self, interaction: discord.Interaction, symbol: str, target: float):
         await interaction.response.defer(ephemeral=True)
         success = await self.remove_alert(str(interaction.user.id), symbol.upper(), target)
@@ -114,7 +109,6 @@ class Alerts(commands.Cog):
             await interaction.followup.send("❌ No matching alert found.", ephemeral=True)
 
     @app_commands.command(name="clear_alerts", description="Remove all price alerts you’ve set.")
-    @app_commands.guilds(discord.Object(id=GUILD_ID))
     async def clear_alerts_command(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         user_id = str(interaction.user.id)

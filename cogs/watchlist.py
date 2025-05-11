@@ -11,8 +11,6 @@ import asyncio
 DB_PATH = "data/finance.db"
 os.makedirs("data", exist_ok=True)
 
-GUILD_ID = 857656646415024148
-
 async def init_db():
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute('''
@@ -105,7 +103,6 @@ class Watchlist(commands.Cog):
         return discord.File(buf, filename="watchlist_chart.png")
 
     @app_commands.command(name="add", description="Add a stock or ETF to your watchlist.")
-    @app_commands.guilds(discord.Object(id=GUILD_ID))
     async def add(self, interaction: discord.Interaction, stock: str):
         await interaction.response.defer(ephemeral=True)
         user_id = str(interaction.user.id)
@@ -132,7 +129,6 @@ class Watchlist(commands.Cog):
         await interaction.followup.send(f"\u2705 Added `{valid_stock}` to your watchlist.", ephemeral=True)
 
     @app_commands.command(name="list", description="View your watchlist with current prices or a performance chart.")
-    @app_commands.guilds(discord.Object(id=GUILD_ID))
     async def list(self, interaction: discord.Interaction, chart: bool = False):
         await interaction.response.defer(ephemeral=True)
         user_id = str(interaction.user.id)
@@ -154,7 +150,6 @@ class Watchlist(commands.Cog):
         await interaction.followup.send("\ud83d\udcc8 Your Watchlist:\n" + "\n".join(rows), ephemeral=True)
 
     @app_commands.command(name="remove", description="Remove a stock or ETF from your watchlist.")
-    @app_commands.guilds(discord.Object(id=GUILD_ID))
     async def remove(self, interaction: discord.Interaction, stock: str):
         await interaction.response.defer(ephemeral=True)
         user_id = str(interaction.user.id)
@@ -169,7 +164,6 @@ class Watchlist(commands.Cog):
         await interaction.followup.send(f"\ud83d\uddd1\ufe0f Removed `{stock}` from your watchlist.", ephemeral=True)
 
     @app_commands.command(name="clear", description="Remove all assets from your watchlist.")
-    @app_commands.guilds(discord.Object(id=GUILD_ID))
     async def clear(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         user_id = str(interaction.user.id)

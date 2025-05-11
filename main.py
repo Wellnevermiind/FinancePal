@@ -6,7 +6,6 @@ import os
 
 load_dotenv()
 TOKEN = os.getenv("DISCORD_TOKEN")
-GUILD_ID = 857656646415024148
 APP_ID = 1370900483174174780  # your real App ID
 
 intents = discord.Intents.default()
@@ -30,9 +29,9 @@ class FinancePal(commands.Bot):
         await self.load_extension("cogs.alerts")
         print("✅ All cogs loaded.")
 
-        # Sync slash commands to your dev server
-        await self.tree.sync(guild=discord.Object(id=GUILD_ID))
-        print(f"✅ Synced slash commands to guild {GUILD_ID}")
+        # Sync slash commands globally (takes up to 1 hour to appear)
+        await self.tree.sync()
+        print("✅ Synced global slash commands")
 
 bot = FinancePal()
 

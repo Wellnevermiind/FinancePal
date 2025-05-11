@@ -7,8 +7,6 @@ import os
 DB_PATH = "data/finance.db"
 os.makedirs("data", exist_ok=True)
 
-GUILD_ID = 857656646415024148
-
 async def init_db():
     async with aiosqlite.connect(DB_PATH) as db:
         await db.execute('''
@@ -46,7 +44,6 @@ class Settings(commands.Cog):
             return None
 
     @app_commands.command(name="settings", description="View your FinancePal settings.")
-    @app_commands.guilds(discord.Object(id=GUILD_ID))
     async def settings(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         user_id = str(interaction.user.id)
@@ -74,7 +71,6 @@ class Settings(commands.Cog):
         await interaction.followup.send(embed=embed, ephemeral=True)
 
     @app_commands.command(name="set_setting", description="Change a FinancePal setting.")
-    @app_commands.guilds(discord.Object(id=GUILD_ID))
     async def set_setting(self, interaction: discord.Interaction, field: str, value: str):
         await interaction.response.defer(ephemeral=True)
         user_id = str(interaction.user.id)
