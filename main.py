@@ -32,6 +32,7 @@ class FinancePal(commands.Bot):
         await self.load_extension("cogs.settings")
         await self.load_extension("cogs.alerts")
         await self.load_extension("cogs.info")
+        await self.load_extension("cogs.errors")
         print("✅ All cogs loaded.")
 
         # Create seen_users table for onboarding tracking
@@ -66,8 +67,6 @@ class FinancePal(commands.Bot):
 
                     await db.execute("INSERT INTO seen_users (user_id) VALUES (?)", (user_id,))
                     await db.commit()
-
-        await commands.Bot.on_interaction(self, interaction)
 
 bot = FinancePal()
 
