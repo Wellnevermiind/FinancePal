@@ -11,9 +11,9 @@ class Core(commands.Cog):
         embed = discord.Embed(
             title="👋 Welcome to **FinancePal**!",
             description=(
-                "FinancePal is here to help you track assets, set price alerts, and compare stock performance.\n\n"
-                "By using FinancePal, you agree to our [Terms of Service](https://pastebin.com/3815p2Mq) and [Privacy Policy](https://pastebin.com/fWjwdehp).\n\n"
-                "Use `/add` to track assets, `/alert` for price pings, and `/aiadvisor` to ask about investing.\n"
+                "FinancePal is here to help you track assets, set price alerts, and compare stock performance."
+                "By using FinancePal, you agree to our [Terms of Service](https://pastebin.com/3815p2Mq) and [Privacy Policy](https://pastebin.com/fWjwdehp)."
+                "Use `/add` to track assets, `/alert` for price pings, and `/aiadvisor` to ask about investing."
                 "Try `/help` for more.",
             ),
             color=0x745fed
