@@ -49,6 +49,15 @@ FinancePal is a lightweight, privacy-conscious bot built with:
 
 Created with ❤️ by [nevermiind](https://github.com/Wellnevermiind) — student and programmer.
 
+## DISCLAIMER
+FinancePal provides stock and financial data for informational purposes only. The information, tools, and features provided by the bot, including stock prices, charts, and comparisons, are not intended as investment advice or recommendations.
+
+FinancePal does not guarantee the accuracy, completeness, or timeliness of the data provided. Users should perform their own research or consult a licensed financial advisor before making any investment decisions.
+
+Data Sources: FinancePal sources financial data from publicly available APIs (such as Yahoo Finance, Alpha Vantage, etc.). These data sources may have restrictions on their commercial use. By using this bot, you agree to comply with the terms of service of the respective data providers.
+
+Limitation of Liability: FinancePal, its developers, and contributors are not responsible for any financial losses or damages arising from the use of this bot. All decisions made based on the information provided by FinancePal are solely the responsibility of the user.
+
 ---
 
 ## 🛠️ Developer Setup
@@ -58,4 +67,4 @@ git clone https://github.com/Wellnevermiind/FinancePal.git
 cd FinancePal
 python -m venv venv
 source venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.txt'''
