@@ -67,7 +67,7 @@ class FinancePal(commands.Bot):
                     await db.execute("INSERT INTO seen_users (user_id) VALUES (?)", (user_id,))
                     await db.commit()
 
-        await super().on_interaction(interaction)
+        await commands.Bot.on_interaction(self, interaction)
 
 bot = FinancePal()
 

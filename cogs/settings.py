@@ -25,7 +25,7 @@ class Settings(commands.Cog):
         self.bot = bot
         bot.loop.create_task(init_db())
 
-    async def set_setting(self, user_id, field, value):
+    async def save_setting(self, user_id, field, value):
         async with aiosqlite.connect(DB_PATH) as db:
             await db.execute(f'''
                 INSERT INTO user_settings (user_id, {field})
@@ -71,6 +71,10 @@ class Settings(commands.Cog):
         await interaction.followup.send(embed=embed, ephemeral=True)
 
     @app_commands.command(name="set_setting", description="Change a FinancePal setting.")
+    @app_commands.describe(
+        field="Setting to change: currency, chart_days, show_percentages, watchlist_limit",
+        value="New value for the setting (e.g., EUR, 30, true, or 5)"
+    )
     async def set_setting(self, interaction: discord.Interaction, field: str, value: str):
         await interaction.response.defer(ephemeral=True)
         user_id = str(interaction.user.id)
@@ -95,7 +99,7 @@ class Settings(commands.Cog):
             await interaction.followup.send("❌ Invalid value for this setting.", ephemeral=True)
             return
 
-        await self.set_setting(user_id, field, parsed_value)
+        await self.save_setting(user_id, field, parsed_value)
         await interaction.followup.send(f"✅ `{field}` updated to `{value}`.", ephemeral=True)
 
 async def setup(bot):

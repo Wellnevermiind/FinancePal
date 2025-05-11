@@ -19,20 +19,5 @@ class Core(commands.Cog):
         synced = await self.bot.tree.sync()
         await interaction.followup.send(f"🔁 Synced {len(synced)} global commands.")
 
-    @app_commands.command(name="help", description="Show help for FinancePal.")
-    async def help(self, interaction: discord.Interaction):
-        embed = discord.Embed(
-            title="📘 FinancePal Help",
-            description="Here are some useful commands:",
-            color=0x00ff99
-        )
-        embed.add_field(name="/setup", value="Intro + quickstart guide", inline=False)
-        embed.add_field(name="/add", value="Add an asset to your watchlist", inline=False)
-        embed.add_field(name="/list", value="View your watchlist", inline=False)
-        embed.add_field(name="/remove", value="Remove an asset from your watchlist", inline=False)
-        embed.set_footer(text="More features are on the way!")
-
-        await interaction.response.send_message(embed=embed, ephemeral=True)
-
 async def setup(bot: commands.Bot):
     await bot.add_cog(Core(bot))
