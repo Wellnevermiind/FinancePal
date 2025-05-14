@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://media.discordapp.net/attachments/859845219163176961/1370943923714916496/FinancePal_Logo_Final.png?ex=68215686&is=68200506&hm=06425e7cb7d662bbfab4c4ecac7d3ff0af2659652c349e5f7e65aa85675da4cd&=&format=webp&quality=lossless&width=1008&height=1008" width="240" />
+  <img src="https://media.discordapp.net/attachments/859845219163176961/1370943923714916496/FinancePal_Logo_Final.png?ex=6825f3c6&is=6824a246&hm=5028aeb13080ccc45263116b708455e7c2f09fc7dbc399244b57dd1efff0ea49&=&format=webp&quality=lossless&width=1008&height=1008" width="240" />
 </p>
 
 <h1 align="center">FinancePal</h1>
