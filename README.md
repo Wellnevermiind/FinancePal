@@ -47,7 +47,7 @@ FinancePal is a lightweight, privacy-conscious bot built with:
 - `discord.py` 2.x
 - `yfinance`, `matplotlib`, `aiosqlite`
 
-Created with ❤️ by [nevermiind](https://github.com/Wellnevermiind) — student and programmer.
+Created with ❤️ by [nevermiind](https://nevermiind.dev) — student and programmer.
 
 ## DISCLAIMER
 FinancePal provides stock and financial data for informational purposes only. The information, tools, and features provided by the bot, including stock prices, charts, and comparisons, are not intended as investment advice or recommendations.
