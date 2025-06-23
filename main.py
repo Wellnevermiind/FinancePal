@@ -26,6 +26,7 @@ class FinancePal(commands.Bot):
     async def setup_hook(self):
         # Load all cogs
         print("🔄 Loading cogs...")
+        await self.load_extension("cogs.desync")
         await self.load_extension("cogs.core")
         await self.load_extension("cogs.watchlist")
         await self.load_extension("cogs.compare")
