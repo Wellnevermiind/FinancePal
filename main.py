@@ -47,30 +47,31 @@ class FinancePal(commands.Bot):
         # 🔧 Do NOT sync commands here — this was causing duplicates
         # await self.tree.sync()
 
-    async def on_interaction(self, interaction: discord.Interaction):
-        if interaction.user and not interaction.user.bot:
-            user_id = str(interaction.user.id)
-            async with aiosqlite.connect(DB_PATH) as db:
-                cursor = await db.execute("SELECT 1 FROM seen_users WHERE user_id = ?", (user_id,))
-                seen = await cursor.fetchone()
+#    async def on_interaction(self, interaction: discord.Interaction):
+ #       if interaction.user and not interaction.user.bot:
+ #           user_id = str(interaction.user.id)
+ #           async with aiosqlite.connect(DB_PATH) as db:
+#                cursor = await db.execute("SELECT 1 FROM seen_users WHERE user_id = ?", (user_id,))
+ #               seen = await cursor.fetchone()
+#
+  #              if not seen:
+  #                  try:
+     #                   await interaction.user.send(
+  #                          "**👋 Welcome to FinancePal!**\n\n"
+  #                          "Thanks for trying out the bot. Use `/help` to view available commands and `/settings` to personalize your experience.\n\n"
+       #                     "Need help? Use `/info` or contact the developer!"
+  #                      )
+  #                  except discord.Forbidden:
+  #                      pass  # User has DMs closed
 
-                if not seen:
-                    try:
-                        await interaction.user.send(
-                            "**👋 Welcome to FinancePal!**\n\n"
-                            "Thanks for trying out the bot. Use `/help` to view available commands and `/settings` to personalize your experience.\n\n"
-                            "Need help? Use `/info` or contact the developer!"
-                        )
-                    except discord.Forbidden:
-                        pass  # User has DMs closed
-
-                    await db.execute("INSERT INTO seen_users (user_id) VALUES (?)", (user_id,))
-                    await db.commit()
+   #                 await db.execute("INSERT INTO seen_users (user_id) VALUES (?)", (user_id,))
+   #                 await db.commit()
 
 bot = FinancePal()
 
 @bot.event
 async def on_ready():
+    bot.tree.clear_commands(guild=None)
     print(f"✅ FinancePal is online as {bot.user}")
     print(f"Cogs loaded: {list(bot.extensions.keys())}")
     try:
