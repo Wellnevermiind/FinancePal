@@ -25,7 +25,6 @@ class FinancePal(commands.Bot):
 
     async def setup_hook(self):
         print("🔄 Loading cogs...")
-
         await self.load_extension("cogs.core")
         await self.load_extension("cogs.watchlist")
         await self.load_extension("cogs.compare")
@@ -43,6 +42,8 @@ class FinancePal(commands.Bot):
                 )
             ''')
             await db.commit()
+
+        # 🚫 No tree.sync() here to avoid duplicate command registration
 
     async def on_interaction(self, interaction: discord.Interaction):
         if interaction.user and not interaction.user.bot:
