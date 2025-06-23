@@ -26,10 +26,6 @@ class FinancePal(commands.Bot):
     async def setup_hook(self):
         print("🔄 Loading cogs...")
 
-        # Load desync cog manually with legacy command registration
-        import cogs.desync as desync_module
-        desync_module.setup_legacy(self)
-
         await self.load_extension("cogs.core")
         await self.load_extension("cogs.watchlist")
         await self.load_extension("cogs.compare")
@@ -47,13 +43,6 @@ class FinancePal(commands.Bot):
                 )
             ''')
             await db.commit()
-
-        # Clear any previously registered global commands
-        self.tree.clear_commands(guild=None)
-
-        # Sync clean global command set
-        synced = await self.tree.sync()
-        print(f"🔁 Synced {len(synced)} global commands.")
 
     async def on_interaction(self, interaction: discord.Interaction):
         if interaction.user and not interaction.user.bot:
