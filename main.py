@@ -44,9 +44,8 @@ class FinancePal(commands.Bot):
             ''')
             await db.commit()
 
-        # Sync slash commands globally (takes up to 1 hour to appear)
-        await self.tree.sync()
-        print("✅ Synced global slash commands")
+        # 🔧 Do NOT sync commands here — this was causing duplicates
+        # await self.tree.sync()
 
     async def on_interaction(self, interaction: discord.Interaction):
         if interaction.user and not interaction.user.bot:
@@ -74,5 +73,10 @@ bot = FinancePal()
 async def on_ready():
     print(f"✅ FinancePal is online as {bot.user}")
     print(f"Cogs loaded: {list(bot.extensions.keys())}")
+    try:
+        synced = await bot.tree.sync()
+        print(f"🔁 Synced {len(synced)} global commands.")
+    except Exception as e:
+        print(f"⚠️ Slash command sync failed: {e}")
 
 bot.run(TOKEN)
