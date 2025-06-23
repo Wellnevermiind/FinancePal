@@ -20,34 +20,17 @@ async def init_db():
         ''')
         await db.commit()
 
-class Settings(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
-        bot.loop.create_task(init_db())
+# Define the grouped commands
+class SettingsGroup(app_commands.Group):
+    def __init__(self, parent_cog):
+        super().__init__(name="settings", description="Manage your FinancePal settings.")
+        self.parent_cog = parent_cog
 
-    async def save_setting(self, user_id, field, value):
-        async with aiosqlite.connect(DB_PATH) as db:
-            await db.execute(f'''
-                INSERT INTO user_settings (user_id, {field})
-                VALUES (?, ?)
-                ON CONFLICT(user_id) DO UPDATE SET {field} = excluded.{field}
-            ''', (user_id, value))
-            await db.commit()
-
-    async def get_settings(self, user_id):
-        async with aiosqlite.connect(DB_PATH) as db:
-            cursor = await db.execute("SELECT * FROM user_settings WHERE user_id = ?", (user_id,))
-            row = await cursor.fetchone()
-            if row:
-                keys = [column[0] for column in cursor.description]
-                return dict(zip(keys, row))
-            return None
-
-    @app_commands.command(name="settings", description="View your FinancePal settings.")
-    async def settings(self, interaction: discord.Interaction):
+    @app_commands.command(name="view", description="View your FinancePal settings.")
+    async def view(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
         user_id = str(interaction.user.id)
-        settings = await self.get_settings(user_id)
+        settings = await self.parent_cog.get_settings(user_id)
 
         if not settings:
             settings = {
@@ -66,16 +49,16 @@ class Settings(commands.Cog):
         embed.add_field(name="Chart Days", value=settings["chart_days"], inline=True)
         embed.add_field(name="Show %", value="Yes" if settings["show_percentages"] else "No", inline=True)
         embed.add_field(name="Chart Ticker Limit", value=settings["watchlist_limit"], inline=True)
-        embed.set_footer(text="Use /set_setting to change these values.")
+        embed.set_footer(text="Use /settings set to change these values.")
 
         await interaction.followup.send(embed=embed, ephemeral=True)
 
-    @app_commands.command(name="set_setting", description="Change a FinancePal setting.")
+    @app_commands.command(name="set", description="Change a FinancePal setting.")
     @app_commands.describe(
         field="Setting to change: currency, chart_days, show_percentages, watchlist_limit",
         value="New value for the setting (e.g., EUR, 30, true, or 5)"
     )
-    async def set_setting(self, interaction: discord.Interaction, field: str, value: str):
+    async def set(self, interaction: discord.Interaction, field: str, value: str):
         await interaction.response.defer(ephemeral=True)
         user_id = str(interaction.user.id)
         valid_fields = {
@@ -99,8 +82,33 @@ class Settings(commands.Cog):
             await interaction.followup.send("❌ Invalid value for this setting.", ephemeral=True)
             return
 
-        await self.save_setting(user_id, field, parsed_value)
+        await self.parent_cog.save_setting(user_id, field, parsed_value)
         await interaction.followup.send(f"✅ `{field}` updated to `{value}`.", ephemeral=True)
+
+# Main Cog
+class Settings(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        bot.tree.add_command(SettingsGroup(self))
+        bot.loop.create_task(init_db())
+
+    async def save_setting(self, user_id, field, value):
+        async with aiosqlite.connect(DB_PATH) as db:
+            await db.execute(f'''
+                INSERT INTO user_settings (user_id, {field})
+                VALUES (?, ?)
+                ON CONFLICT(user_id) DO UPDATE SET {field} = excluded.{field}
+            ''', (user_id, value))
+            await db.commit()
+
+    async def get_settings(self, user_id):
+        async with aiosqlite.connect(DB_PATH) as db:
+            cursor = await db.execute("SELECT * FROM user_settings WHERE user_id = ?", (user_id,))
+            row = await cursor.fetchone()
+            if row:
+                keys = [column[0] for column in cursor.description]
+                return dict(zip(keys, row))
+            return None
 
 async def setup(bot):
     await bot.add_cog(Settings(bot))
