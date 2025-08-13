@@ -15,7 +15,6 @@ if not TOKEN:
     print("❌ DISCORD_TOKEN missing (check your .env or deployment env vars).")
     sys.exit(1)
 
-# Basic sanity checks to catch bad pastes early (won't print the token)
 if len(TOKEN) < 50 or " " in TOKEN:
     print("❌ DISCORD_TOKEN looks malformed (too short or contains spaces). Re-copy it from the Bot tab.")
     sys.exit(1)
