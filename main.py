@@ -145,4 +145,5 @@ async def sync_cmd(
     except Exception as e:
         await interaction.followup.send(f"⚠️ Sync failed: `{type(e).__name__}: {e}`", ephemeral=True)
 
+print("🔍 Token preview (masked):", f"{TOKEN[:8]}...{TOKEN[-6:]} (len={len(TOKEN)})")
 bot.run(TOKEN)
