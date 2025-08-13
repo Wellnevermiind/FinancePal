@@ -17,7 +17,6 @@ if len(parts) != 3:
     print(f"❌ Token format unexpected: got {len(parts)} segments (expected 3). Re-copy from Bot tab.")
     sys.exit(1)
 
-# decode first segment (base64url) -> should be the bot's user/application ID as ascii
 seg0 = parts[0]
 pad = "=" * (-len(seg0) % 4)
 try:
