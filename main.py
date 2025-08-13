@@ -6,9 +6,19 @@ from discord import app_commands
 from dotenv import load_dotenv
 from typing import Literal
 import aiosqlite
+import os, sys
 
-load_dotenv()
-TOKEN = os.getenv("DISCORD_TOKEN")
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"), override=True)
+
+TOKEN = os.getenv("DISCORD_TOKEN", "").strip()
+if not TOKEN:
+    print("❌ DISCORD_TOKEN missing (check your .env or deployment env vars).")
+    sys.exit(1)
+
+# Basic sanity checks to catch bad pastes early (won't print the token)
+if len(TOKEN) < 50 or " " in TOKEN:
+    print("❌ DISCORD_TOKEN looks malformed (too short or contains spaces). Re-copy it from the Bot tab.")
+    sys.exit(1)
 
 intents = discord.Intents.default()
 intents.message_content = True
