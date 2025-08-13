@@ -108,21 +108,10 @@ async def welcome_after_first_command(interaction: discord.Interaction, command:
 
 @bot.event
 async def on_ready():
-    # Sanity: after login, discord.py sets bot.application_id
     print(f"✅ FinancePal is online as {bot.user} (ID: {bot.user.id})")
     print(f"application_id: {bot.application_id}")
     print(f"Cogs loaded: {list(bot.extensions.keys())}")
 
-        # After global sync, force an immediate guild sync for all joined guilds
-    for g in bot.guilds:
-        try:
-            bot.tree.clear_commands(guild=g)   # wipe stale per-guild registry
-            await bot.tree.sync(guild=g)       # publish current tree instantly to this guild
-            print(f"🔁 Synced commands to guild: {g.name} ({g.id})")
-        except Exception as e:
-            print(f"⚠️ Guild sync failed for {g.name} ({g.id}): {e}")
-
-    # Optional hard guard: if you still keep APP_ID in env, verify match
     env_app_id = os.getenv("APP_ID")
     if env_app_id and int(env_app_id) != (bot.application_id or 0):
         print("❌ APP_ID mismatch: env APP_ID doesn't match the logged-in application's ID.")
@@ -130,10 +119,20 @@ async def on_ready():
         sys.exit(1)
 
     if not bot._synced_once:
-        # Clear local GLOBAL cache and publish GLOBAL commands
+        # 1️⃣ Push clean GLOBAL commands first
         bot.tree.clear_commands(guild=None)
         await bot.tree.sync()
         print("🌍 Synced global commands")
+
+        # 2️⃣ Immediately overwrite per-guild registry to point to the new commands
+        for g in bot.guilds:
+            try:
+                bot.tree.clear_commands(guild=g)
+                await bot.tree.sync(guild=g)
+                print(f"🔁 Synced commands to guild: {g.name} ({g.id})")
+            except Exception as e:
+                print(f"⚠️ Guild sync failed for {g.name} ({g.id}): {e}")
+
         bot._synced_once = True
 
 # Simple responsiveness check
