@@ -45,7 +45,7 @@ class FinancePal(commands.Bot):
                 )
             ''')
             await db.commit()
-
+        # Do NOT sync here — wait until on_ready once.
 
 bot = FinancePal()
 
@@ -76,8 +76,9 @@ async def on_ready():
     print(f"Cogs loaded: {list(bot.extensions.keys())}")
 
     if not bot._synced_once:
-        bot.tree.clear_commands()   # clear local GLOBAL cache
-        await bot.tree.sync()       # push GLOBAL commands
+        # Note: clear_commands requires keyword-only 'guild'
+        bot.tree.clear_commands(guild=None)  # clear local GLOBAL cache
+        await bot.tree.sync()                # push GLOBAL commands
         print("🌍 Synced global commands")
         bot._synced_once = True
 
@@ -91,15 +92,19 @@ async def sync_cmd(
     # Keep the interaction alive while we sync
     await interaction.response.defer(ephemeral=True, thinking=True)
 
-    if scope == "here" and interaction.guild:
-        guild = discord.Object(id=interaction.guild.id)
-        if purge_guild_first:
-            bot.tree.clear_commands(guild=guild)  # remove GUILD commands so only global remain
-        await bot.tree.sync(guild=guild)          # (re)sync this guild scope
-        await interaction.followup.send("🔁 Synced commands to **this guild**.", ephemeral=True)
-    else:
-        bot.tree.clear_commands()                 # clear local GLOBAL cache
-        await bot.tree.sync()                     # push GLOBAL set
-        await interaction.followup.send("🌍 Synced **global** commands.", ephemeral=True)
+    try:
+        if scope == "here" and interaction.guild:
+            guild = discord.Object(id=interaction.guild.id)
+            if purge_guild_first:
+                bot.tree.clear_commands(guild=guild)  # remove GUILD commands so only global remain
+            await bot.tree.sync(guild=guild)          # (re)sync this guild scope
+            await interaction.followup.send("🔁 Synced commands to **this guild**.", ephemeral=True)
+        else:
+            bot.tree.clear_commands(guild=None)  # clear local GLOBAL cache
+            await bot.tree.sync()                # push GLOBAL set
+            await interaction.followup.send("🌍 Synced **global** commands.", ephemeral=True)
+    except Exception as e:
+        # Avoid colliding with a global error handler by replying via followup
+        await interaction.followup.send(f"⚠️ Sync failed: `{type(e).__name__}: {e}`", ephemeral=True)
 
 bot.run(TOKEN)
