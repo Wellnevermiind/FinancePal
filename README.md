@@ -34,7 +34,7 @@
 |------------------|-----------------------------------------------|
 | `/add AAPL`      | Add Apple to your personal watchlist          |
 | `/list`          | Show current prices (or `/list chart`)        |
-| `/compare`       | Compare 2–5 tickers on a price chart          |
+| `/compare`       | Compare 2–5 tickers (otherwise known as stocks) on a price chart          |
 | `/alert`         | Set a price alert (e.g. TSLA above 800)       |
 | `/settings`      | View your preferences                         |
 | `/update_setting`| Change chart days, currency, etc.             |
@@ -68,3 +68,4 @@ cd FinancePal
 python -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt'''
+
