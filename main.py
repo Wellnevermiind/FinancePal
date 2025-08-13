@@ -7,14 +7,45 @@ from dotenv import load_dotenv
 from typing import Literal
 import aiosqlite
 import os, sys
+import base64
 
 load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"), override=True)
 
 TOKEN = os.getenv("DISCORD_TOKEN", "").strip()
-if not TOKEN:
-    print("❌ DISCORD_TOKEN missing (check your .env or deployment env vars).")
+parts = TOKEN.split(".")
+if len(parts) != 3:
+    print(f"❌ Token format unexpected: got {len(parts)} segments (expected 3). Re-copy from Bot tab.")
     sys.exit(1)
 
+# decode first segment (base64url) -> should be the bot's user/application ID as ascii
+seg0 = parts[0]
+pad = "=" * (-len(seg0) % 4)
+try:
+    decoded_id = base64.urlsafe_b64decode(seg0 + pad).decode("ascii")
+except Exception as e:
+    print(f"❌ Couldn't decode token segment0: {e}")
+    sys.exit(1)
+
+env_app_id = os.getenv("APP_ID", "").strip()
+print(f"🔎 Token decodes to ID: {decoded_id}")
+if env_app_id and decoded_id != env_app_id:
+    print(f"❌ Token belongs to a DIFFERENT application (token ID {decoded_id} != APP_ID {env_app_id}).")
+    print("   Use the Bot token from the *same* app you’re deploying, or update APP_ID to match.")
+    sys.exit(1)
+if not TOKEN:
+    print(f"ℹ️ CWD: {os.getcwd()}")
+    print(f"ℹ️ .env path tried: {os.path.join(os.path.dirname(__file__), '.env')}")
+    print(f"ℹ️ DISCORD_TOKEN present in env? {'yes' if 'DISCORD_TOKEN' in os.environ else 'no'}")
+    print("❌ DISCORD_TOKEN missing.")
+    sys.exit(1)
+
+if any(c in TOKEN for c in ['"', "'", "\n", "\r"]) or " " in TOKEN or len(TOKEN) < 50:
+    print("❌ DISCORD_TOKEN malformed (quotes/newlines/spaces/too short). Paste exactly the Bot token.")
+    print("🔍 Raw char summary:", {"len": len(TOKEN),
+                                   "has_quote": any(c in TOKEN for c in ['"', "'"]),
+                                   "has_newline": any(c in TOKEN for c in ['\n', '\r']),
+                                   "has_space": " " in TOKEN})
+    sys.exit(1)
 if len(TOKEN) < 50 or " " in TOKEN:
     print("❌ DISCORD_TOKEN looks malformed (too short or contains spaces). Re-copy it from the Bot tab.")
     sys.exit(1)
