@@ -113,6 +113,15 @@ async def on_ready():
     print(f"application_id: {bot.application_id}")
     print(f"Cogs loaded: {list(bot.extensions.keys())}")
 
+        # After global sync, force an immediate guild sync for all joined guilds
+    for g in bot.guilds:
+        try:
+            bot.tree.clear_commands(guild=g)   # wipe stale per-guild registry
+            await bot.tree.sync(guild=g)       # publish current tree instantly to this guild
+            print(f"🔁 Synced commands to guild: {g.name} ({g.id})")
+        except Exception as e:
+            print(f"⚠️ Guild sync failed for {g.name} ({g.id}): {e}")
+
     # Optional hard guard: if you still keep APP_ID in env, verify match
     env_app_id = os.getenv("APP_ID")
     if env_app_id and int(env_app_id) != (bot.application_id or 0):
