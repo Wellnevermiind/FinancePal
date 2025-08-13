@@ -1,130 +1,125 @@
-# bot.py
+# main.py
 import os
-import asyncio
-import logging
-import urllib.parse
-
 import discord
 from discord.ext import commands
 from discord import app_commands
+from dotenv import load_dotenv
+import aiosqlite
 
-# ──────────────────────────────────────────────────────────────────────────────
-# CONFIG
-# ──────────────────────────────────────────────────────────────────────────────
-TOKEN = os.getenv("DISCORD_TOKEN") or "PUT_YOUR_TOKEN_HERE"
-
-GUILD_IDS = [
-    857656646415024148,  # Lounge
-    1168450739044093953, # PS dev wallet tracker
-    1204840433780269056, # FTBF
-    1254567153449828442, # For Sell 1
-    1372954937436147712, # FPS Legends
-    1380605052552609915, # grow a garden
-]
-
-BOT_PERMISSIONS = (
-    discord.Permissions(
-        view_channel=True,
-        send_messages=True,
-        embed_links=True,
-        attach_files=True,
-        read_message_history=True,
-        use_external_emojis=True,
-    ).value
-)
-
-# Build static discord.Object list for @app_commands.guilds()
-GUILDS = [discord.Object(id=g) for g in GUILD_IDS]
-
-# ──────────────────────────────────────────────────────────────────────────────
-# LOGGING / BOT
-# ──────────────────────────────────────────────────────────────────────────────
-logging.basicConfig(level=logging.INFO)
-log = logging.getLogger("financepal")
+load_dotenv()
+TOKEN = os.getenv("DISCORD_TOKEN")
+APP_ID = 1370900483174174780  # your real App ID (optional; see note below)
+DEV_GUILD_ID = os.getenv("DEV_GUILD_ID")  # set to a guild ID string during dev, or leave unset for global
 
 intents = discord.Intents.default()
-bot = commands.Bot(command_prefix="!", intents=intents)
+intents.message_content = True  # not required for slash, but fine if you need it
 
-def build_invite_url(application_id: int) -> str:
-    base = "https://discord.com/api/oauth2/authorize"
-    params = {
-        "client_id": str(application_id),
-        "scope": "bot applications.commands",
-        "permissions": str(BOT_PERMISSIONS),
-        # You can pin a server for safety:
-        # "guild_id": "857656646415024148",
-        # "disable_guild_select": "true",
-    }
-    return f"{base}?{urllib.parse.urlencode(params)}"
+DB_PATH = "data/finance.db"
+os.makedirs("data", exist_ok=True)
 
-# ──────────────────────────────────────────────────────────────────────────────
-# COGS + a guaranteed /ping (guild-scoped)
-# ──────────────────────────────────────────────────────────────────────────────
-class CoreHealthcheck(commands.Cog):
-    def __init__(self, bot_: commands.Bot):
-        self.bot = bot_
-
-    # Make /ping a *guild command* so it shows quickly and unambiguously
-    @app_commands.guilds(*GUILDS)
-    @app_commands.command(name="ping", description="Health check")
-    async def ping(self, interaction: discord.Interaction):
-        await interaction.response.send_message(
-            f"pong · app={interaction.client.application_id} · guild={interaction.guild_id}"
+class FinancePal(commands.Bot):
+    def __init__(self):
+        super().__init__(
+            command_prefix="!",
+            intents=intents,
+            application_id=APP_ID  # You can also omit this; discord.py will resolve it after login
         )
+        self._synced_once = False  # guard against duplicate syncs on reconnects
 
-async def load_cogs():
-    exts = [
-        "cogs.core",
-        "cogs.watchlist",
-        "cogs.compare",
-        "cogs.settings",
-        "cogs.alerts",
-        "cogs.info",
-        "cogs.errors",
-    ]
-    for ext in exts:
-        try:
-            await bot.load_extension(ext)
-            log.info("Loaded cog: %s", ext)
-        except Exception as e:
-            log.exception("Failed to load cog %s: %s", ext, e)
+    async def setup_hook(self):
+        print("🔄 Loading cogs...")
+        # Important: cogs must NOT call tree.sync() themselves.
+        await self.load_extension("cogs.core")
+        await self.load_extension("cogs.watchlist")
+        await self.load_extension("cogs.compare")
+        await self.load_extension("cogs.settings")
+        await self.load_extension("cogs.alerts")
+        await self.load_extension("cogs.info")
+        await self.load_extension("cogs.errors")
+        print("✅ All cogs loaded.")
 
-async def print_guild_commands(phase: str):
-    for gid in GUILD_IDS:
-        try:
-            cmds = await bot.tree.fetch_commands(guild=discord.Object(id=gid))
-            log.info("[%s] Guild %s commands: %s", phase, gid, [f"{c.name}({c.id})" for c in cmds])
-        except Exception as e:
-            log.error("[%s] fetch guild %s commands failed: %s", phase, gid, e)
+        # Create seen_users table
+        async with aiosqlite.connect(DB_PATH) as db:
+            await db.execute('''
+                CREATE TABLE IF NOT EXISTS seen_users (
+                    user_id TEXT PRIMARY KEY
+                )
+            ''')
+            await db.commit()
 
-async def sync_guilds():
-    # Ensure /ping is present (avoids duplicate registration)
-    if not any(isinstance(c, CoreHealthcheck) for c in bot.cogs.values()):
-        await bot.add_cog(CoreHealthcheck(bot))
+        # Add a small healthcheck for quick verification in your dev guild
+        @app_commands.command(name="ping", description="Health check")
+        async def ping(interaction: discord.Interaction):
+            await interaction.response.send_message(
+                f"pong · app={interaction.client.application_id} · guild={interaction.guild_id}"
+            )
 
-    await print_guild_commands("pre-sync")
+        # If a dev guild is set, register /ping only there for fast propagation
+        if DEV_GUILD_ID:
+            self.tree.add_command(ping, guild=discord.Object(id=int(DEV_GUILD_ID)))
+        else:
+            # Otherwise make it global
+            self.tree.add_command(ping)
 
-    # Sync only to the listed guilds (fast)
-    for gid in GUILD_IDS:
-        gobj = discord.Object(id=gid)
-        cmds = await bot.tree.sync(guild=gobj)
-        log.info("✅ Synced to guild %s -> %s", gid, [f"{c.name}({c.id})" for c in cmds])
+    async def on_interaction(self, interaction: discord.Interaction):
+        # Welcome DM on first interaction
+        if interaction.user and not interaction.user.bot:
+            user_id = str(interaction.user.id)
+            async with aiosqlite.connect(DB_PATH) as db:
+                cursor = await db.execute("SELECT 1 FROM seen_users WHERE user_id = ?", (user_id,))
+                seen = await cursor.fetchone()
 
-    await print_guild_commands("post-sync")
+                if not seen:
+                    try:
+                        await interaction.user.send(
+                            "**👋 Welcome to FinancePal!**\n\n"
+                            "Thanks for trying out the bot. Use `/help` to view available commands and `/settings` to personalize your experience.\n\n"
+                            "Need help? Use `/info` or contact the developer!"
+                        )
+                    except discord.Forbidden:
+                        pass  # User has DMs closed
+
+                    await db.execute("INSERT INTO seen_users (user_id) VALUES (?)", (user_id,))
+                    await db.commit()
+
+        # Let discord.py process slash commands as usual
+        await super().on_interaction(interaction)
+
+bot = FinancePal()
 
 @bot.event
 async def on_ready():
-    app_id = bot.application_id
-    log.info("✅ Logged in as %s (user id: %s)", bot.user, bot.user.id if bot.user else "unknown")
-    log.info("application_id: %s", app_id)
-    log.info("🔗 Invite THIS app with: %s", build_invite_url(app_id))
-    # Start sync
-    asyncio.create_task(sync_guilds())
+    print(f"✅ FinancePal is online as {bot.user} (ID: {bot.user.id})")
+    print(f"application_id: {bot.application_id}")
+    print(f"Cogs loaded: {list(bot.extensions.keys())}")
 
-async def main():
-    async with bot:
-        await load_cogs()
-        await bot.start(TOKEN)
+    # One-time controlled sync to avoid duplicates
+    if not bot._synced_once:
+        if DEV_GUILD_ID:
+            guild = discord.Object(id=int(DEV_GUILD_ID))
+            # 👉 Do NOT clear — just sync to the guild for instant updates
+            cmds = await bot.tree.sync(guild=guild)
+            print(f"🔁 Synced {len(cmds)} commands to DEV guild {DEV_GUILD_ID}")
+        else:
+            # Global sync (slower to propagate; use when ready)
+            cmds = await bot.tree.sync()
+            print(f"🌍 Synced {len(cmds)} global commands")
+        bot._synced_once = True
 
-if __name__ == "__main__":
-    asyncio.run(main())
+# Admin-only resync command (safe)
+@bot.tree.command(name="sync", description="Force-resync slash commands here.")
+@app_commands.checks.has_permissions(administrator=True)
+async def sync_cmd(interaction: discord.Interaction):
+    if interaction.guild:
+        guild = discord.Object(id=interaction.guild.id)
+        cmds = await bot.tree.sync(guild=guild)
+        await interaction.response.send_message(
+            f"✅ Synced {len(cmds)} commands to this guild.", ephemeral=True
+        )
+    else:
+        cmds = await bot.tree.sync()
+        await interaction.response.send_message(
+            f"✅ Synced {len(cmds)} global commands.", ephemeral=True
+        )
+
+bot.run(TOKEN)
